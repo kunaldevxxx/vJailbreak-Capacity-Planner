@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Platform9 vJailbreak Capacity Planner v7.0 — RDM disk migration workflow aligned to official documentation" />
+  <title>VJailbreak Capacity Planner v7.0</title>
+  <style>
+    :root {
+      --md-sys-color-primary: #1a73e8;
+      --md-sys-color-primary-hover: #1557b0;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #e8f0fe;
+      --md-sys-color-on-primary-container: #041e49;
+      --md-sys-color-surface: #f8f9fa;
+      --md-sys-color-surface-container: #ffffff;
+      --md-sys-color-surface-container-high: #f1f3f4;
+      --md-sys-color-on-surface: #1f2937;
+      --md-sys-color-on-surface-variant: #4b5563;
+      --md-sys-color-outline: #d1d5db;
+      --md-sys-color-outline-variant: #e5e7eb;
+      --md-sys-color-success: #16a34a;
+      --md-sys-color-success-container: #dc26260a;
+      --md-sys-color-success-bg: #f0fdf4;
+      --md-sys-color-success-border: #bbf7d0;
+      --md-sys-color-error: #dc2626;
+      --md-sys-color-error-bg: #fef2f2;
+      --md-sys-color-error-border: #fecaca;
+      --md-sys-color-warning: #d97706;
+      --md-sys-color-warning-bg: #fffbeb;
+      --md-sys-color-warning-border: #fef3c7;
+      --md-radius-s: 8px;
+      --md-radius-m: 12px;
+      --md-radius-l: 16px;
+      --md-radius-full: 999px;
+      --md-shadow-1: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      --md-shadow-2: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f4f6f9;
+      color: var(--md-sys-color-on-surface);
+      line-height: 1.5;
+      font-size: 13px;
+      padding: 1.5rem;
+    }
+
+    .container { max-width: 1280px; margin: 0 auto; }
+
+    .header-card {
+      background: linear-gradient(135deg, #1e40af 0%, #1a73e8 100%);
+      color: #fff;
+      border-radius: var(--md-radius-l);
+      padding: 2rem 2.25rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--md-shadow-2);
+    }
+
+    .header-card h1 { font-size: 24px; font-weight: 700; margin-bottom: 0.3rem; letter-spacing: -0.01em; }
+    .header-card .sub { color: #e0e7ff; font-size: 13px; max-width: 950px; line-height: 1.6; }
+    .header-card .badge-v {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(4px);
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--md-radius-full);
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card {
+      background: var(--md-sys-color-surface-container);
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: var(--md-radius-l);
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      box-shadow: var(--md-shadow-1);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface);
+      margin-bottom: 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-subtitle {
+      font-size: 12px;
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 1.2rem;
+    }
+
+    .doc-list {
+      font-size: 12px;
+      line-height: 1.75;
+      padding-left: 1.15rem;
+      color: var(--md-sys-color-on-surface);
+    }
+    .doc-list li { margin-bottom: 0.35rem; }
+    .doc-list code {
+      background: var(--md-sys-color-surface-container-high);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      color: #0f172a;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media(max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .input-group { margin-bottom: 1rem; }
+    .label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface-variant);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .slider-row { display: flex; align-items: center; gap: 1rem; }
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: var(--md-radius-full);
+      background: var(--md-sys-color-outline-variant);
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--md-sys-color-primary);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .slider-val {
+      min-width: 65px;
+      text-align: right;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 14px;
+      color: var(--md-sys-color-primary);
+    }
+
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--md-radius-s);
+      font-size: 12px;
+      outline: none;
+      background: #fff;
+      font-family: inherit;
+      transition: all 0.15s ease;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus {
+      border-color: var(--md-sys-color-primary);
+      box-shadow: 0 0 0 3px var(--md-sys-color-primary-container);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--md-radius-full);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-ok { background: #dcfce7; color: #15803d; }
+    .badge-bad { background: #fee2e2; color: #b91c1c; }
+    .badge-warn { background: #fef3c7; color: #b45309; }
+    .badge-sm { padding: 0.15rem 0.5rem; font-size: 9px; margin-left: 0.35rem; }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.85rem;
+    }
+    .metric-card {
+      background: var(--md-sys-color-surface-container-high);
+      border-radius: var(--md-radius-m);
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .metric-card .k { font-size: 10px; font-weight: 700; color: var(--md-sys-color-on-surface-variant); text-transform: uppercase; letter-spacing: 0.03em; }
+    .metric-card .v { font-size: 18px; font-weight: 700; font-family: ui-monospace, SFMono-Regular, monospace; color: var(--md-sys-color-on-surface); margin-top: 0.15rem; }
+    .metric-card .unit { font-size: 11px; font-weight: 400; color: var(--md-sys-color-on-surface-variant); }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: var(--md-sys-color-surface-container-high);
+      border-radius: var(--md-radius-full);
+      overflow: hidden;
+      margin: 0.5rem 0;
+      border: 1px solid var(--md-sys-color-outline-variant);
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--md-sys-color-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: width 0.3s ease;
+    }
+    .progress-fill.warn { background: var(--md-sys-color-warning); }
+    .progress-fill.bad { background: var(--md-sys-color-error); }
+
+    .risk-panel {
+      border-radius: var(--md-radius-m);
+      padding: 1rem 1.25rem;
+      margin-top: 1rem;
+      border: 1px solid transparent;
+    }
+    .risk-panel.ok { background: var(--md-sys-color-success-bg); border-color: var(--md-sys-color-success-border); color: #14532d; }
+    .risk-panel.warn { background: var(--md-sys-color-warning-bg); border-color: var(--md-sys-color-warning-border); color: #78350f; }
+    .risk-panel.bad { background: var(--md-sys-color-error-bg); border-color: var(--md-sys-color-error-border); color: #7f1d1d; }
+
+    .table-wrap { overflow-x: auto; border-radius: var(--md-radius-m); border: 1px solid var(--md-sys-color-outline-variant); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1080px; background: #fff; }
+    th {
+      background: var(--md-sys-color-surface-container-high);
+      color: var(--md-sys-color-on-surface-variant);
+      padding: 0.65rem 0.75rem;
+      text-align: left;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--md-sys-color-outline-variant);
+    }
+    td { padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--md-sys-color-outline-variant); vertical-align: middle; }
+    tr:hover td { background: var(--md-sys-color-surface-container-high); }
+
+    .btn {
+      padding: 0.55rem 1rem;
+      border-radius: var(--md-radius-s);
+      border: 1px solid var(--md-sys-color-outline);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { background: var(--md-sys-color-surface-container-high); }
+    .btn-primary { background: var(--md-sys-color-primary); color: #fff; border: none; }
+    .btn-primary:hover { background: var(--md-sys-color-primary-hover); }
+    .btn-danger { color: var(--md-sys-color-error); border-color: var(--md-sys-color-outline); }
+    .btn-danger:hover { background: var(--md-sys-color-error-bg); }
+
+    /* Modern Tab Interface Styling */
+    .tab-header {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--md-sys-color-outline-variant);
+      margin-bottom: 1rem;
+    }
+    .tab-btn {
+      padding: 0.65rem 1.25rem;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--md-sys-color-on-surface-variant);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tab-btn:hover { color: var(--md-sys-color-primary); }
+    .tab-btn.active {
+      color: var(--md-sys-color-primary);
+      border-bottom-color: var(--md-sys-color-primary);
+      background: var(--md-sys-color-primary-container);
+      border-radius: var(--md-radius-s) var(--md-radius-s) 0 0;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .cmd-box {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 1.25rem;
+      border-radius: var(--md-radius-m);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.6;
+      border: 1px solid #1e293b;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header-card">
+    <div class="badge-v">Platform9 vJailbreak</div>
+    <h1>vJailbreak Native Capacity Planner & CLI Generator</h1>
+    <div class="sub">
+      Capacity planning for vJailbreak v2v-helper pod memory, plus an RDM disk migration workflow
+      aligned with official documentation. Calculate memory footprints, OOM risks, and generate tailored CLI patches.
+    </div>
+  </div>
+
+  <!-- RDM Prerequisites -->
+  <div class="card" style="border-left: 4px solid var(--md-sys-color-warning);">
+    <div class="card-title">RDM Disk Migration — Prerequisites & Constraints</div>
+    <div class="card-subtitle">Applies to any VM below using an RDM/Cinder-adoption strategy. Source: vJailbreak docs, Guide &rarr; "Migrating RDM Disk".</div>
+    <ul class="doc-list">
+      <li><strong>Platform version:</strong> RDM disk migration requires PCD &ge; July 2025 (2025.7). It is <strong>not supported on plain OpenStack</strong>.</li>
+      <li><strong>Multi-attach / SAN multipath</strong> (shared pRDM for Windows failover clusters) additionally requires PCD &ge; October 2025 (2025.10) with patched libvirt/QEMU, plus a Cinder volume type with multi-attach enabled.</li>
+      <li><strong>Cold migration only:</strong> RDM-backed VMs can only use <code>migrationStrategy.type: cold</code> — no warm or live migration.</li>
+      <li><strong>Owner-VM grouping</strong> (<code>VALIDATE_RDM_OWNER_VMS</code>, default <code>true</code>): every VM sharing the same RDM disk must be included in the <em>same</em> migration plan.</li>
+      <li><strong>Manual step, not scriptable:</strong> in VMware, the VM must be powered off and the RDM disk detached (leave "Delete files from storage" unchecked) before a migration plan can be created.</li>
+      <li><strong>Multi-IP / Cluster IP Error Workaround:</strong> If migration fails with <code>"Failed to reserve port for VM: multiple user-assigned IPs not supported for an interface"</code>, remove the secondary Cluster IP from the migration form, trigger the migration, and re-add the Cluster IP on the PCD side using <code>openstack port set --fixed-ip</code> before target port attachment.</li>
+      <li><strong>Rollback caution:</strong> once an RDM disk is Cinder-managed, never delete the volume directly — use <code>openstack volume delete &lt;volume-id&gt; --remote</code> to unmanage it without touching the underlying SAN LUN.</li>
+    </ul>
+  </div>
+
+  <!-- Cluster Setup -->
+  <div class="card">
+    <div class="card-title"> Cluster Execution Parameters</div>
+    <div class="card-subtitle">Define migration host memory constraints and target deadline window.</div>
+
+    <div class="grid-2">
+      <div>
+        <div class="input-group">
+          <label class="label" for="nodeGb">Node Total Memory (GB)</label>
+          <div class="slider-row">
+            <input type="range" id="nodeGb" min="32" max="512" step="4" value="64">
+            <div class="slider-val"><span id="nodeGbVal">64</span> GB</div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="label" for="targetHours">Completion Deadline Window (Hours)</label>
+          <div class="slider-row">
+            <input type="range" id="targetHours" min="1" max="48" step="1" value="6">
+            <div class="slider-val"><span id="targetHoursVal">6</span> h</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label">Live Feasibility Verdict</div>
+        <div style="margin-bottom: 0.6rem;">
+          <span id="feasibilityBadge" class="badge badge-warn">Evaluating...</span>
+        </div>
+        <div id="feasibilityText" style="font-size: 12px; color: var(--md-sys-color-on-surface-variant); margin-bottom: 0.6rem;"></div>
+
+        <div class="label">Usable Node RAM Allocation (% at Max Safe Concurrency)</div>
+        <div class="progress-bar">
+          <div id="capacityFill" class="progress-fill" style="width: 0%;">0%</div>
+        </div>
+        <div id="nodeReserveInfo" style="font-size: 11px; color: var(--md-sys-color-on-surface-variant);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Batch Execution & OOM Simulator -->
+  <div class="card" style="border-left: 4px solid var(--md-sys-color-primary);">
+    <div class="card-title">Batch Execution & OOM Risk Simulator</div>
+    <div class="card-subtitle">
+      Select target concurrency to simulate batch schedules, node RAM utilization percentages, and OOMKill risk.
+      RDM owner groups (VMs sharing one RDM disk) are always kept together, consistent with <code style="font-size:11px;">VALIDATE_RDM_OWNER_VMS</code>.
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="input-group">
+          <label class="label" for="simConcurrency">Simulated Concurrency (Pods Running simultaneously)</label>
+          <div class="slider-row">
+            <input type="range" id="simConcurrency" min="1" max="16" step="1" value="2">
+            <div class="slider-val"><span id="simConcurrencyVal">2</span> Pods</div>
+          </div>
+        </div>
+
+        <div class="metrics-grid" style="margin-top: 1rem;">
+          <div class="metric-card">
+            <div class="k">Simulated Batches</div>
+            <div class="v" id="simTotalBatches">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="k">Total Request</div>
+            <div class="v" id="simTotalReq">0 <span class="unit">GiB</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="k">Total Limit</div>
+            <div class="v" id="simTotalLim">0 <span class="unit">GiB</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="k">Node RAM Used</div>
+            <div class="v" id="simUtilPct">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="label">Batch Distribution Schedule</div>
+        <div id="simBatchBreakdown" style="font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; background: var(--md-sys-color-surface-container-high); padding: 0.6rem 0.8rem; border-radius: var(--md-radius-s); margin-bottom: 0.8rem; border: 1px solid var(--md-sys-color-outline-variant);">
+          -- Enter VMs to compute batches --
+        </div>
+
+        <div id="simRiskPanel" class="risk-panel ok">
+          <div style="font-weight: 700; font-size: 13px;" id="simRiskTitle">OOM-Safe Configuration</div>
+          <div style="font-size: 12px; margin-top: 0.2rem;" id="simRiskDesc">Node memory safely accommodates peak limits across all concurrent pods.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VM Workload Inputs -->
+  <div class="card">
+    <div class="card-title"> Virtual Machine Workload Specification</div>
+    <div class="card-subtitle">
+      Specify OS Profile, vJailbreak migration strategy, System Root Disk (GB), and Data Disks. For RDM/Cinder-adopted
+      strategies, the data disk's bytes are not re-copied over the network — but the OS root disk
+      still transfers.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>VM Identifier</th>
+            <th>OS Profile</th>
+            <th>vJailbreak Strategy</th>
+            <th>RDM Owner Group</th>
+            <th>Root Disk (GB)</th>
+            <th>Data Disks (GB)</th>
+            <th>Disks</th>
+            <th>Total Storage</th>
+            <th>Pod Request</th>
+            <th>Pod Limit</th>
+            <th>LGFS RAM</th>
+            <th>Est. ETA</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="vmRows"></tbody>
+      </table>
+    </div>
+
+    <div id="rdmValidationPanel" style="margin-top: 0.9rem;"></div>
+
+    <div style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+      <button class="btn btn-primary" id="btnAddVm">➕ Add VM</button>
+      <button class="btn" id="btnLoadSample">Load vJailbreak RDM & Cluster Sample</button>
+      <button class="btn" id="btnClearAll">🗑️ Clear All</button>
+    </div>
+  </div>
+
+  <!-- Plan Summary Metrics -->
+  <div class="card">
+    <div class="card-title"> Plan Summary Metrics</div>
+    <div class="card-subtitle">Aggregate resource requirements evaluated against OOM-safe execution thresholds.</div>
+
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="k">Total VMs</div>
+        <div class="v" id="mTotal">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Total Work</div>
+        <div class="v" id="mWork">0 <span class="unit">min</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Required Pods</div>
+        <div class="v" id="mReqConc">0 <span class="unit">pods</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Schedulable Pods</div>
+        <div class="v" id="mSchedPods" style="color: var(--md-sys-color-primary);">0 <span class="unit">pods</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">OOM-Safe Pods</div>
+        <div class="v" id="mSafeConc" style="color: var(--md-sys-color-success);">0 <span class="unit">pods</span></div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Est. Batch Time</div>
+        <div class="v" id="mEtaSafe">N/A</div>
+      </div>
+      <div class="metric-card">
+        <div class="k">Min Node RAM</div>
+        <div class="v" id="mMinNode">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Breakdown -->
+  <div class="card">
+    <div class="card-title"> Detailed Per-VM Execution Breakdown</div>
+    <div class="card-subtitle">Phase-by-phase memory footprints derived from OS profile, storage strategy, and attached volume parameters.</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>VM Identifier</th>
+            <th>OS Profile</th>
+            <th>Storage Strategy</th>
+            <th>Disks</th>
+            <th>Total Storage</th>
+            <th>Phase A (Inspection)</th>
+            <th>Phase B (Conversion)</th>
+            <th>Peak Memory</th>
+            <th>Pod Request</th>
+            <th>Pod Limit</th>
+            <th>LGFS RAM</th>
+            <th>ETA</th>
+          </tr>
+        </thead>
+        <tbody id="breakdownRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Generated Commands (TABBED INTERFACE) -->
+  <div class="card">
+    <div class="card-title"> Generated vJailbreak CLI Commands & Migration Guides</div>
+    <div class="card-subtitle">Select a tab below to view standard pod environment patches or the specialized step-by-step RDM workflow.</div>
+
+    <!-- Tab Header Navigation -->
+    <div class="tab-header">
+      <button class="tab-btn active" data-tab="tabStandard"> Standard Pod & Environment Setup</button>
+      <button class="tab-btn" data-tab="tabRdm"> RDM Disk Migration Help & CLI Workflow</button>
+    </div>
+
+    <!-- Tab Content 1: Standard Commands -->
+    <div class="tab-content active" id="tabStandard">
+      <div class="cmd-box" id="cmdOutputStandard">-- Enter VM parameters above to generate configuration patches --</div>
+    </div>
+
+    <!-- Tab Content 2: RDM Help & Workflow -->
+    <div class="tab-content" id="tabRdm">
+      <div class="cmd-box" id="cmdOutputRdm">-- Select VMs with RDM strategies to display RDM instructions --</div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <button class="btn btn-primary" id="btnCopyCmd"> Copy Active Tab Script</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  'use strict';
+
+  const OS_PROFILES = {
+    rhel: { label: "RHEL / Red Hat", conversionGi: 2.5, baseGi: 1.5, prepMinutes: 10, safetyFactor: 1.25 },
+    ubuntu: { label: "Debian / Ubuntu", conversionGi: 1.8, baseGi: 1.2, prepMinutes: 8, safetyFactor: 1.20 },
+    windows: { label: "Windows OS", conversionGi: 1.2, baseGi: 1.0, prepMinutes: 14, safetyFactor: 1.30 },
+    generic: { label: "Generic Linux", conversionGi: 2.0, baseGi: 1.5, prepMinutes: 10, safetyFactor: 1.25 }
+  };
+
+  const STRATEGIES = {
+    standard_copy: {
+      label: "Standard VMDK Copy (Cold/Warm)",
+      isCinderAdopted: false,
+      requiresCold: false,
+      requiresGroup: false,
+      prepMinAdd: 0,
+      ramAddGi: 0,
+      safetyFactorAdd: 0,
+      manualDowntimeMin: 0
+    },
+    rdm_cinder: {
+      label: "RDM Disk Migration (Cinder Volume Adoption)",
+      isCinderAdopted: true,
+      requiresCold: true,
+      requiresGroup: false,
+      prepMinAdd: 2,
+      ramAddGi: 0.2,
+      safetyFactorAdd: 0.05,
+      manualDowntimeMin: 20
+    },
+    rdm_multiattach: {
+      label: "RDM Multi-Attach (Windows Failover Cluster)",
+      isCinderAdopted: true,
+      requiresCold: true,
+      requiresGroup: true,
+      prepMinAdd: 4,
+      ramAddGi: 0.3,
+      safetyFactorAdd: 0.10,
+      manualDowntimeMin: 30
+    }
+  };
+
+  let vms = [];
+  let idCounter = 0;
+  let activeTabId = 'tabStandard';
+
+  const elNodeGb = document.getElementById('nodeGb');
+  const elTargetHours = document.getElementById('targetHours');
+  const elSimConc = document.getElementById('simConcurrency');
+  const elVmRows = document.getElementById('vmRows');
+
+  // Tab Switching Logic
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      activeTabId = btn.dataset.tab;
+      document.getElementById(activeTabId).classList.add('active');
+    });
+  });
+
+  function parseDataDisks(str) {
+    if (!str) return [];
+    return str.split(/[\s,]+/).map(Number).filter(v => v > 0 && isFinite(v));
+  }
+
+  function chooseLgfsMb(rootGb, totalDisks) {
+    if (rootGb > 1000 || totalDisks > 6) return 8192;
+    if (rootGb > 600 || totalDisks > 4) return 6144;
+    if (rootGb > 300 || totalDisks > 2) return 4096;
+    return 3072;
+  }
+
+  function calcVmMetrics(osKey, stratKey, rootGb, dataDisks) {
+    const profile = OS_PROFILES[osKey] || OS_PROFILES.generic;
+    const strat = STRATEGIES[stratKey] || STRATEGIES.standard_copy;
+
+    const totalDisks = 1 + dataDisks.length;
+    const totalGb = rootGb + dataDisks.reduce((a, b) => a + b, 0);
+
+    const lgfsMb = chooseLgfsMb(rootGb, totalDisks);
+    const lgfsGi = lgfsMb / 1024;
+
+    const phaseAGi = lgfsGi + (totalDisks * 0.75) + strat.ramAddGi;
+    const phaseBGi = lgfsGi + profile.conversionGi + strat.ramAddGi;
+    const peakGi = Math.max(phaseAGi, phaseBGi);
+
+    const effectiveSafetyFactor = profile.safetyFactor + strat.safetyFactorAdd;
+    const requestGb = Math.max(1, Math.ceil(peakGi));
+    const limitGb = Math.max(requestGb, Math.ceil(requestGb * effectiveSafetyFactor));
+
+    const totalPrepMinutes = profile.prepMinutes + strat.prepMinAdd;
+    const dataCopyGb = strat.isCinderAdopted ? rootGb : totalGb;
+    const transferMin = dataCopyGb / 10.0;
+    const durationMin = Math.ceil(totalPrepMinutes + transferMin + (totalDisks * 1.0) + strat.manualDowntimeMin);
+
+    return {
+      profile, strat, totalDisks, totalGb, dataCopyGb, lgfsMb, phaseAGi, phaseBGi, peakGi, requestGb, limitGb, durationMin
+    };
+  }
+
+  function nodeUsableRAM(nodeGb) {
+    const sysReserve = Math.max(8, Math.ceil(nodeGb * 0.20));
+    const evictionThreshold = 4;
+    const usable = Math.max(0, nodeGb - sysReserve - evictionThreshold);
+    return { sysReserve, evictionThreshold, usable };
+  }
+
+  function addVmRow(name = '', osKey = 'rhel', stratKey = 'standard_copy', rootGb = 100, dataStr = '', ownerGroup = '') {
+    vms.push({ id: idCounter++, name, osKey, stratKey, rootGb, dataStr, ownerGroup });
+    render();
+  }
+
+  function removeVm(id) {
+    vms = vms.filter(v => v.id !== id);
+    render();
+  }
+
+  function updateVm(id, field, value) {
+    const vm = vms.find(v => v.id === id);
+    if (vm) {
+      if (field === 'rootGb') vm.rootGb = Number(value) || 0;
+      else vm[field] = value;
+      render();
+    }
+  }
+
+  function render() {
+    const nodeGb = Number(elNodeGb.value);
+    const targetHours = Number(elTargetHours.value);
+    const simConc = Number(elSimConc.value);
+
+    document.getElementById('nodeGbVal').textContent = nodeGb;
+    document.getElementById('targetHoursVal').textContent = targetHours;
+    document.getElementById('simConcurrencyVal').textContent = simConc;
+
+    elVmRows.innerHTML = '';
+    const parsedVms = [];
+
+    vms.forEach((vm, i) => {
+      const dataDisks = parseDataDisks(vm.dataStr);
+      const metrics = vm.rootGb > 0 ? calcVmMetrics(vm.osKey, vm.stratKey, vm.rootGb, dataDisks) : null;
+      if (metrics) parsedVms.push({ ...vm, metrics });
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="color: var(--md-sys-color-on-surface-variant);">${i + 1}</td>
+        <td><input type="text" data-id="${vm.id}" data-field="name" value="${escapeHtml(vm.name)}" placeholder="VM Name"></td>
+        <td>
+          <select data-id="${vm.id}" data-field="osKey">
+            <option value="rhel" ${vm.osKey === 'rhel' ? 'selected' : ''}>RHEL / Red Hat</option>
+            <option value="ubuntu" ${vm.osKey === 'ubuntu' ? 'selected' : ''}>Debian / Ubuntu</option>
+            <option value="windows" ${vm.osKey === 'windows' ? 'selected' : ''}>Windows OS</option>
+            <option value="generic" ${vm.osKey === 'generic' ? 'selected' : ''}>Generic Linux</option>
+          </select>
+        </td>
+        <td>
+          <select data-id="${vm.id}" data-field="stratKey">
+            <option value="standard_copy" ${vm.stratKey === 'standard_copy' ? 'selected' : ''}>Standard VMDK Copy</option>
+            <option value="rdm_cinder" ${vm.stratKey === 'rdm_cinder' ? 'selected' : ''}>RDM Disk Migration (Cinder Adoption)</option>
+            <option value="rdm_multiattach" ${vm.stratKey === 'rdm_multiattach' ? 'selected' : ''}>RDM Multi-Attach (Windows Cluster)</option>
+          </select>
+        </td>
+        <td><input type="text" data-id="${vm.id}" data-field="ownerGroup" value="${escapeHtml(vm.ownerGroup || '')}" placeholder="e.g. WSFC-CLUSTER-01"></td>
+        <td><input type="number" data-id="${vm.id}" data-field="rootGb" value="${vm.rootGb}" min="1"></td>
+        <td><input type="text" data-id="${vm.id}" data-field="dataStr" value="${escapeHtml(vm.dataStr)}" placeholder="e.g. 100, 200"></td>
+        <td style="text-align: center;">${metrics ? metrics.totalDisks : '-'}</td>
+        <td style="font-family: monospace; text-align: right;">${metrics ? metrics.totalGb + ' GB' : '-'}</td>
+        <td style="font-weight: 700; color: var(--md-sys-color-primary); text-align: center;">${metrics ? metrics.requestGb + ' GiB' : '-'}</td>
+        <td style="font-weight: 700; color: var(--md-sys-color-error); text-align: center;">${metrics ? metrics.limitGb + ' GiB' : '-'}</td>
+        <td style="font-family: monospace; text-align: center;">${metrics ? metrics.lgfsMb + ' MB' : '-'}</td>
+        <td style="text-align: center;">${metrics ? metrics.durationMin + ' min' : '-'}</td>
+        <td><button class="btn btn-danger" data-action="delete" data-id="${vm.id}">✕</button></td>
+      `;
+      elVmRows.appendChild(tr);
+    });
+
+    if (!parsedVms.length) {
+      resetOutputs();
+      return;
+    }
+
+    const groupMap = new Map();
+    const ungrouped = [];
+    const rdmGroupWarnings = [];
+
+    parsedVms.forEach(v => {
+      const g = (v.ownerGroup || '').trim();
+      if (v.metrics.strat.requiresGroup) {
+        if (!g) {
+          rdmGroupWarnings.push(`"${v.name}" uses RDM Multi-Attach but has no RDM Owner Group set.`);
+          ungrouped.push(v);
+        } else {
+          if (!groupMap.has(g)) groupMap.set(g, []);
+          groupMap.get(g).push(v);
+        }
+      } else {
+        ungrouped.push(v);
+      }
+    });
+
+    const node = nodeUsableRAM(nodeGb);
+    const totalWorkMin = parsedVms.reduce((a, b) => a + b.metrics.durationMin, 0);
+    const reqConc = Math.max(1, Math.ceil(totalWorkMin / (targetHours * 60)));
+
+    const worstVm = parsedVms.reduce((a, b) => b.metrics.limitGb > a.metrics.limitGb ? b : a);
+    const safePods = Math.max(0, Math.floor(node.usable / worstVm.metrics.limitGb));
+    const schedPods = Math.max(0, Math.floor(node.usable / worstVm.metrics.requestGb));
+
+    const feasible = safePods >= reqConc;
+    const etaHours = safePods > 0 ? Math.ceil(totalWorkMin / safePods / 60) : null;
+
+    document.getElementById('mTotal').textContent = parsedVms.length;
+    document.getElementById('mWork').innerHTML = `${totalWorkMin} <span class="unit">min</span>`;
+    document.getElementById('mReqConc').innerHTML = `${reqConc} <span class="unit">pods</span>`;
+    document.getElementById('mSchedPods').innerHTML = `${schedPods} <span class="unit">pods</span>`;
+    document.getElementById('mSafeConc').innerHTML = `${safePods} <span class="unit">pods</span>`;
+    document.getElementById('mEtaSafe').textContent = etaHours !== null ? `~${etaHours} h` : 'N/A';
+
+    const usedRAM = safePods * worstVm.metrics.limitGb;
+    const utilPct = node.usable > 0 ? Math.min(100, Math.round((usedRAM / node.usable) * 100)) : 0;
+    const fill = document.getElementById('capacityFill');
+    fill.style.width = utilPct + '%';
+    fill.textContent = utilPct + '% RAM Utilized';
+
+    const badge = document.getElementById('feasibilityBadge');
+    const text = document.getElementById('feasibilityText');
+
+    if (safePods <= 0) {
+      badge.className = 'badge badge-bad';
+      badge.textContent = '✗ INFEASIBLE — Node RAM Too Small';
+      text.textContent = `Node usable memory (${node.usable} GiB) cannot fit worst-case pod limit (${worstVm.metrics.limitGb} GiB).`;
+    } else if (feasible) {
+      badge.className = 'badge badge-ok';
+      badge.textContent = `✓ FEASIBLE — Est. ${etaHours} Hours`;
+      text.textContent = `Required concurrency (${reqConc} pods) fits within maximum safe limit (${safePods} pods).`;
+    } else {
+      badge.className = 'badge badge-warn';
+      badge.textContent = `⚠️ INFEASIBLE within ${targetHours}h Window`;
+      text.textContent = `Requires ${reqConc} concurrent pods, but node safely supports ${safePods} pods.`;
+    }
+
+    const simReqRAM = simConc * worstVm.metrics.requestGb;
+    const simLimRAM = simConc * worstVm.metrics.limitGb;
+    const simPct = node.usable > 0 ? Math.round((simLimRAM / node.usable) * 100) : 0;
+
+    let batchTextArr = [];
+    let batchIndex = 1;
+
+    groupMap.forEach((members, groupName) => {
+      batchTextArr.push(`Batch ${batchIndex++}: ${members.length} VM(s) — Group "${groupName}"`);
+    });
+
+    if (ungrouped.length > 0) {
+      const totalBatchesOther = Math.ceil(ungrouped.length / simConc);
+      let rem = ungrouped.length;
+      for (let b = 1; b <= totalBatchesOther; b++) {
+        const count = Math.min(simConc, rem);
+        batchTextArr.push(`Batch ${batchIndex++}: ${count} Parallel VM(s)`);
+        rem -= count;
+      }
+    }
+
+    document.getElementById('simTotalBatches').textContent = batchTextArr.length;
+    document.getElementById('simTotalReq').innerHTML = `${simReqRAM} <span class="unit">GiB</span>`;
+    document.getElementById('simTotalLim').innerHTML = `${simLimRAM} <span class="unit">GiB</span>`;
+    document.getElementById('simUtilPct').textContent = `${simPct}%`;
+    document.getElementById('simBatchBreakdown').textContent = batchTextArr.join(' | ');
+
+    let breakdownHtml = '';
+    parsedVms.forEach((vm, i) => {
+      const m = vm.metrics;
+      breakdownHtml += `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${escapeHtml(vm.name)}</strong></td>
+          <td><span class="badge badge-ok">${m.profile.label}</span></td>
+          <td><span class="badge ${m.strat.isCinderAdopted ? 'badge-ok' : 'badge-warn'}">${m.strat.label}</span></td>
+          <td style="text-align: center;">${m.totalDisks}</td>
+          <td style="font-family: monospace; text-align: right;">${m.totalGb} GB</td>
+          <td style="font-family: monospace;">${m.phaseAGi.toFixed(2)} GiB</td>
+          <td style="font-family: monospace;">${m.phaseBGi.toFixed(2)} GiB</td>
+          <td style="font-family: monospace; font-weight: 700; color: var(--md-sys-color-error);">${m.peakGi.toFixed(2)} GiB</td>
+          <td style="font-weight: 700; color: var(--md-sys-color-primary); text-align: center;">${m.requestGb} GiB</td>
+          <td style="font-weight: 700; color: var(--md-sys-color-error); text-align: center;">${m.limitGb} GiB</td>
+          <td style="font-family: monospace; text-align: center;">${m.lgfsMb} MB</td>
+          <td style="text-align: center;">${m.durationMin} min</td>
+        </tr>
+      `;
+    });
+    document.getElementById('breakdownRows').innerHTML = breakdownHtml;
+
+    // GENERATE STANDARD COMMANDS TAB
+    let stdScript = `# =========================================================================\n`;
+    stdScript += `# TAB 1: STANDARD VJAILBREAK HELPER POD & ENVIRONMENT TUNING\n`;
+    stdScript += `# Execute on the vJailbreak Controller VM as 'ubuntu'\n`;
+    stdScript += `# =========================================================================\n\n`;
+    stdScript += `# 1. Set Backend Memory Variable (prevents OOM during libguestfs inspection)\n`;
+    stdScript += `export LIBGUESTFS_BACKEND_SETTINGS="memory=4096"\n\n`;
+
+    stdScript += `# 2. Apply Dynamic Pod Allocations based on Worst-Case VM Profile (${worstVm.name})\n`;
+    stdScript += `sudo kubectl -n migration-system patch configmap pf9-env --type merge \\\n`;
+    stdScript += `  -p '{"data": {"LIBGUESTFS_MEMSIZE": "${worstVm.metrics.lgfsMb}"}}'\n\n`;
+
+    stdScript += `sudo kubectl -n migration-system patch configmap vjailbreak-settings --type merge \\\n`;
+    stdScript += `  -p '{"data": {"V2V_HELPER_POD_MEMORY_REQUEST": "${worstVm.metrics.requestGb}Gi"}}'\n\n`;
+
+    stdScript += `sudo kubectl -n migration-system patch configmap vjailbreak-settings --type merge \\\n`;
+    stdScript += `  -p '{"data": {"V2V_HELPER_POD_MEMORY_LIMIT": "${worstVm.metrics.limitGb}Gi"}}'\n\n`;
+
+    stdScript += `# 3. Restart Controller Manager to load changes\n`;
+    stdScript += `kubectl -n migration-system rollout restart deployment migration-controller-manager\n`;
+
+    document.getElementById('cmdOutputStandard').textContent = stdScript;
+
+    // GENERATE RDM WORKFLOW TAB
+    const rdmVms = parsedVms.filter(v => v.metrics.strat.isCinderAdopted);
+    let rdmScript = `# =========================================================================\n`;
+    rdmScript += `# TAB 2: RDM DISK MIGRATION WORKFLOW & CLI COMMANDS\n`;
+    rdmScript += `# Aligned with official Platform9 vJailbreak Documentation\n`;
+    rdmScript += `# =========================================================================\n\n`;
+
+    if (rdmVms.length === 0) {
+      rdmScript += `# [INFO] No VMs are currently configured with RDM Migration Strategies.\n`;
+      rdmScript += `# Select "RDM Disk Migration" or "RDM Multi-Attach" in the workload table above.`;
+    } else {
+      rdmScript += `# STEP 1: VMWARE MANUAL ANNOTATION (Per VM Notes Field)\n`;
+      rdmScript += `# In vCenter, add the following line to the VM Notes field:\n`;
+      rdmScript += `# VJB_RDM:<Hard Disk Name>:volumeRef:source-name=<LUN source-id/name>\n`;
+      rdmScript += `# Power off VMs and detach RDM disks (Uncheck "Delete files from storage").\n\n`;
+
+      rdmScript += `# STEP 2: VERIFY CONTROLLER AUTO-RECONCILIATION\n`;
+      rdmVms.forEach(rv => {
+        rdmScript += `kubectl describe vmwaremachine ${rv.name} -n migration-system\n`;
+      });
+      rdmScript += `\n`;
+
+      rdmScript += `# STEP 3: PATCH RECONCILED RDMDISK RESOURCES\n`;
+      rdmVms.forEach(rv => {
+        const volType = rv.metrics.strat.requiresGroup ? '<multiattach-enabled-volume-type>' : '<volume_type>';
+        rdmScript += `kubectl patch rdmdisk <rdmdisk-name-for-${rv.name}> -n migration-system \\\n`;
+        rdmScript += `  -p '{"spec":{"openstackVolumeRef":{"cinderBackendPool":"<backendpool_name>","volumeType":"${volType}"}}}' \\\n`;
+        rdmScript += `  --type=merge\n`;
+      });
+      rdmScript += `\n`;
+
+      rdmScript += `# STEP 4: MULTI-IP / CLUSTER IP WORKAROUND (IF REQUIRED)\n`;
+      rdmScript += `# If port reservation fails, remove secondary IP from migration form, trigger plan, then run:\n`;
+      rdmScript += `openstack port set --fixed-ip subnet=<subnet_id>,ip-address=<cluster_ip> <port_id>\n\n`;
+
+      rdmScript += `# STEP 5: MIGRATION PLAN GROUPINGS (Cold Strategy Mandatory)\n`;
+      groupMap.forEach((members, groupName) => {
+        rdmScript += `# Group Plan "${groupName}": ${members.map(m => m.name).join(', ')}\n`;
+      });
+      rdmVms.filter(v => !v.metrics.strat.requiresGroup).forEach(v => {
+        rdmScript += `# Single Plan for "${v.name}"\n`;
+      });
+    }
+
+    document.getElementById('cmdOutputRdm').textContent = rdmScript;
+  }
+
+  function resetOutputs() {
+    document.getElementById('mTotal').textContent = '0';
+    document.getElementById('mWork').innerHTML = '0 <span class="unit">min</span>';
+    document.getElementById('mReqConc').innerHTML = '0 <span class="unit">pods</span>';
+    document.getElementById('mSchedPods').innerHTML = '0 <span class="unit">pods</span>';
+    document.getElementById('mSafeConc').innerHTML = '0 <span class="unit">pods</span>';
+    document.getElementById('mEtaSafe').textContent = 'N/A';
+    document.getElementById('breakdownRows').innerHTML = '';
+    document.getElementById('cmdOutputStandard').textContent = '-- Enter VM storage parameters above --';
+    document.getElementById('cmdOutputRdm').textContent = '-- Select VMs with RDM strategies to view --';
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function loadSampleData() {
+    vms = [];
+    idCounter = 0;
+    [
+      { name: 'INP44XDDB4572', osKey: 'rhel', stratKey: 'standard_copy', rootGb: 101, dataStr: '101, 51, 201', ownerGroup: '' },
+      { name: 'INP44XDWS3726', osKey: 'windows', stratKey: 'rdm_cinder', rootGb: 101, dataStr: '1000', ownerGroup: '' },
+      { name: 'INP44WSFC0001A', osKey: 'windows', stratKey: 'rdm_multiattach', rootGb: 150, dataStr: '2000', ownerGroup: 'WSFC-CLUSTER-01' },
+      { name: 'INP44WSFC0001B', osKey: 'windows', stratKey: 'rdm_multiattach', rootGb: 150, dataStr: '2000', ownerGroup: 'WSFC-CLUSTER-01' },
+      { name: 'INP44UBNTU0099', osKey: 'ubuntu', stratKey: 'standard_copy', rootGb: 80, dataStr: '100', ownerGroup: '' }
+    ].forEach(v => vms.push({ id: idCounter++, ...v }));
+    render();
+  }
+
+  document.getElementById('btnAddVm').addEventListener('click', () => addVmRow('VM-' + (vms.length + 1), 'rhel', 'standard_copy', 100, '', ''));
+  document.getElementById('btnLoadSample').addEventListener('click', loadSampleData);
+  document.getElementById('btnClearAll').addEventListener('click', () => { vms = []; render(); });
+
+  document.getElementById('btnCopyCmd').addEventListener('click', () => {
+    const activeBox = document.querySelector('.tab-content.active .cmd-box');
+    if (activeBox) {
+      navigator.clipboard.writeText(activeBox.textContent).then(() => alert('Commands from active tab copied to clipboard!'));
+    }
+  });
+
+  elVmRows.addEventListener('input', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+      const id = Number(e.target.dataset.id);
+      const field = e.target.dataset.field;
+      updateVm(id, field, e.target.value);
+    }
+  });
+
+  elVmRows.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON' && e.target.dataset.action === 'delete') {
+      removeVm(Number(e.target.dataset.id));
+    }
+  });
+
+  elNodeGb.addEventListener('input', render);
+  elTargetHours.addEventListener('input', render);
+  elSimConc.addEventListener('input', render);
+
+  loadSampleData();
+});
+</script>
+</body>
+</html>
